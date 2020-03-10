@@ -1,0 +1,128 @@
+.column-container {
+   display: flex;
+}
+
+#player-input {
+   margin-bottom: 10px;
+}
+
+#color-picker {
+   display: flex;
+   margin: 5px 0px;
+   padding: 2px;
+   height: 22px;
+}
+.color-swatch {
+   width: 15px;
+   height: 15px;
+   margin-right: 5px;
+}
+
+.color-swatch:hover {
+   cursor: pointer;
+   border: 2px solid lightblue;
+}
+
+.color-swatch.selected {
+   border: 2px solid aqua;
+}
+
+.reset-game {
+   margin-top: 100px;
+}
+
+.dice-row {
+   margin-top: 10px;
+}
+
+.kept-dice {
+   margin-top: 10px;
+}
+
+.rolled-dice {
+   height: 150px;
+}
+
+.row-value {
+   background: gainsboro;
+   padding: 3px 10px;
+   margin-right: 5px;
+   border-radius: 5px;
+}
+
+.row-value:hover {
+   cursor: pointer;
+}
+
+.row-value.active {
+   background: #24b8ff;
+}
+
+.roll-row {
+   margin-bottom: 10px;
+}
+
+.roll-value {
+   background: gainsboro;
+   padding: 3px 10px;
+   margin-right: 5px;
+   border-radius: 5px;
+}
+
+.roll-value.active {
+   background: #24b8ff;
+}
+
+.column-container {
+   position: relative;
+   width: 100%;
+}
+
+.column-container .column {
+   width: 50%;
+   padding-left: 5px;
+   border-left: 1px solid black;
+}
+
+.player-entry {
+   padding: 5px;
+   padding-bottom: 10px;
+   border: 1px solid black;
+   border-radius: 5px;
+   margin-bottom: 5px;
+}
+
+.player-name {
+   font-weight: bold;
+   margin-bottom: 5px;
+}
+
+.unselectable {
+   -webkit-touch-callout: none;
+   -webkit-user-select: none;
+   -khtml-user-select: none;
+   -moz-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+}
+
+#message-box {
+   height: 300px;
+   border-radius: 10px;
+   background: gainsboro;
+   overflow-y: auto;
+}
+
+#chat-form {
+   display: flex;
+}
+
+#message-input {
+   width: 100%;
+}
+
+.message {
+   margin: 5px 0px;
+   padding: 0px 5px;
+   border-radius: 5px;
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dice Game</title>
+    <meta charset="utf-8" />
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src='app.js'></script>
+    <script src='dicegame.js'></script>
+    <script src='chat.js'></script>
+    <link rel="stylesheet" href='app.css'></link>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Dice Game</h1>
+        </div>
+        <div class="column-container">
+
+
+            <div class="client-game column">
+                <form id="player-input">
+                    <input type="text" id="userName" placeholder="Player Name">
+                    <div id="color-picker"></div>
+                    <button type="submit" onclick="submitName()">Submit Name</button>
+                </form>
+                <div class="roll-btn">
+                    <button onClick="roll()">
+                        Roll
+                    </button>
+                </div>
+                <div class="kept-dice">
+                    Kept:
+                </div>
+
+                <div class="current-score">
+                    <div>Current Score: <span id='current-score'>0</span></div>
+                </div>
+
+                <div class="rolled-dice"></div>
+
+                <div class="chat-container">
+                    <form id="chat-form">
+                        <input id="message-input" type="text" autocomplete="off" />
+                        <button type="submit">Send</button>
+                    </form>
+                    <div id="message-box"></div>
+                </div>
+            </div>
+
+            <div id="all-scores" class="column">
+                All Scores
+            </div>
+        </div>
+
+        <div class="reset-game">
+            <button id="reset-game" onclick="reset()">Reset Game</button>
+        </div>
+    </div>
+</body>
+
+</html>
