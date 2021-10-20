@@ -289,6 +289,7 @@ wss.on('connection', function connection(ws, req) {
                         client.send(JSON.stringify({
                             command: "chat_message",
                             message: msgObj.message,
+                            date: msgObj.date,
                             originIP: messageIP,
                             color: ws.color,
                             user: sendUser

@@ -1,0 +1,26 @@
+.color-picker {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.color-options {
+  margin: 5px 0px;
+  padding: 2px;
+  height: 30px;
+}
+.color-swatch {
+  width: 25px;
+  height: 25px;
+  margin: 2px;
+  &.hover {
+    cursor: pointer;
+    border: 2px solid lightblue;
+    margin: 0px;
+  }
+}
+
+.color-swatch.selected {
+  border: 2px solid aqua;
+  margin: 0px;
+}

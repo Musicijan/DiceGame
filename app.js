@@ -4,8 +4,8 @@ let ws;
 let username = '';
 function connectWS() {
    // set up WSS connection
-   // ws = new WebSocket('ws://localhost:3069/');
-   ws = new WebSocket('ws://web-who:3069/');
+   ws = new WebSocket('ws://localhost:3069/');
+   // ws = new WebSocket('ws://web-who:3069/');
 
    ws.onopen = () => {
       console.log("Socket opened.");
