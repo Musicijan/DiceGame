@@ -1,5 +1,6 @@
 import moment from 'moment';
-import { setUserIsSetState } from '../app/app';
+import toast from 'react-hot-toast';
+import { setPlayerIsSetState } from '../app/app';
 import { addMessage } from '../app/chat';
 import { store } from '../app/store';
 import { WebSocketMessagePayload } from '../types/webSocketTypes';
@@ -8,7 +9,7 @@ import { diceGameService } from './services'
 export interface WebSocketService {
   connectionAttempts: number;
   sendLastRolls: number;
-  username: string;
+  playername: string;
   ws: WebSocket;
   messageQueue: WebSocketMessagePayload[];
 }
@@ -18,7 +19,7 @@ export class WebSocketService {
     console.log('Creating WebSocketService');
     this.connectionAttempts = 0;
     this.sendLastRolls = 0;
-    this.username = '';
+    this.playername = '';
     this.messageQueue = [];
 
     this.init();
@@ -62,10 +63,10 @@ export class WebSocketService {
                 diceGameService.reset(false);
                 this.sendMessage({ command: "get_scores" });
               }
-              alert(msgObj.message);
+              toast(msgObj.message);
               break;
             case "added_player":
-              store.dispatch(setUserIsSetState(true));
+              store.dispatch(setPlayerIsSetState(true));
           }
           console.log(msgObj);
         }
@@ -88,7 +89,7 @@ export class WebSocketService {
   }
 
   sendQueuedMessages() {
-    if (this.ws.OPEN) {
+    if (this.ws.readyState === 1) {
       this.messageQueue.forEach(() => {
         const message = this.messageQueue.shift();
         this.ws.send(JSON.stringify({ ...message }));
@@ -99,13 +100,13 @@ export class WebSocketService {
   }
 
   handleChatMessage(msgObj: any) {
-    const { user, color, date, message } = msgObj;
+    const { player, color, date, message } = msgObj;
     const formattedDate = moment(date).format('MM/DD/YY [at] h:mm:ss a')
     console.log(`received date: ${date}`);
     console.log(`formattedDate date: ${formattedDate}`);
     store.dispatch(addMessage({
       date: formattedDate,
-      user,
+      player,
       color,
       message
     }))

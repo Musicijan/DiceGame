@@ -1,10 +1,11 @@
 import './App.scss';
 import Header from './components/header';
 import GameClient from './components/gameClient';
-import { selectUserName } from './app/app';
+import { selectPlayerName } from './app/app';
 import { useAppSelector } from './app/hooks';
-import {Toaster} from 'react-hot-toast';
+import { Toaster } from 'react-hot-toast';
 import { getColor } from './app/colorPicker';
+import { getScores } from './app/diceGame';
 
 // $(document).ready(() => {
 //   initalizeChat(ws);
@@ -15,19 +16,23 @@ import { getColor } from './app/colorPicker';
 // });
 
 function App() {
-  const userName = useAppSelector(selectUserName);
-  const selectedColor = useAppSelector(getColor)
-
+  const playerName = useAppSelector(selectPlayerName);
+  const selectedColor = useAppSelector(getColor);
+  const scores = useAppSelector(getScores);
+  console.log(scores);
   return (
     <div className="App">
       <Header />
       <div className="column-container">
         <GameClient />
         <div id="all-scores" className="column">
+          <div>
+            Active Player: {scores.activePlayer}
+          </div>
           All Scores
         </div>
       </div>
-      {userName}
+      {playerName}
       {selectedColor}
       <Toaster
         position="top-right"

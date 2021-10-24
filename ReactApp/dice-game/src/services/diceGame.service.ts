@@ -1,3 +1,5 @@
+import { WSMessageCommand } from '../../../../Node Webserver/src/models';
+import { setScores } from '../app/diceGame';
 import { store } from '../app/store';
 import { webSocketService } from './services';
 
@@ -34,7 +36,7 @@ class DiceGameService {
 
   public roll() {
     console.log('roll!');
-    if (!this.verifyRoll()) return false;
+    webSocketService.sendMessage({ command: "roll_dice" });
 
     // should probably just send to WS and have main game engine in BE
     // if (this.dice != 5) {
@@ -42,7 +44,7 @@ class DiceGameService {
     // }
 
     // if (dice === 5) {
-    //   $('#userName').attr('readonly', true);
+    //   $('#playerName').attr('readonly', true);
     // }
 
     // let roll = []
@@ -56,7 +58,7 @@ class DiceGameService {
   }
 
   verifyRoll() {
-    // if ($('#userName').val() === '') {
+    // if ($('#playerName').val() === '') {
     //   alert("Please input a name");
     //   return false;
     // }
@@ -145,10 +147,10 @@ class DiceGameService {
 
   // sendLastRoll() {
   //   try {
-  //     const userName = store.getState().app.userName;
+  //     const playerName = store.getState().app.playerName;
   //     webSocketService.sendMessage({
   //       command: "submit_score",
-  //       user: userName,
+  //       player: playerName,
   //       roll: this.rolls[this.rolls.length - 1],
   //       keptDice: this.keptDice
   //     });
@@ -163,7 +165,8 @@ class DiceGameService {
   // }
 
   public showAllScores(allScores: any): void {
-    //   console.log(allScores);
+      console.log(allScores);
+      store.dispatch(setScores(allScores));
     //   console.log(allScores);
     //   $('#all-scores').empty();
 
@@ -173,20 +176,20 @@ class DiceGameService {
     //   }
     //   $('#all-scores').append(`<div id='player-order'>${allScores.playerOrder}</div>`);
 
-    //   for (let username in allScores.users) {
-    //     let user = allScores.users[username];
-    //     $('#all-scores').append(`<div class='player-entry' id='p-${username.replace(/\W/g, '')}'><div class='player-name'>${username}: ${user.totalScore}</div></div>`);
-    //     for (let i = 0; i < user.rolls.length; i++) {
+    //   for (let playername in allScores.players) {
+    //     let player = allScores.players[playername];
+    //     $('#all-scores').append(`<div class='player-entry' id='p-${playername.replace(/\W/g, '')}'><div class='player-name'>${playername}: ${player.totalScore}</div></div>`);
+    //     for (let i = 0; i < player.rolls.length; i++) {
     //       let rollRow = '';
-    //       user.rolls[i].map((roll, index) => {
-    //         let isKept = user.keptDice[`${i + 1}-${index}`] != undefined ? 'active' : '';
-    //         let colorindex = colors.indexOf(user.color);
+    //       player.rolls[i].map((roll, index) => {
+    //         let isKept = player.keptDice[`${i + 1}-${index}`] != undefined ? 'active' : '';
+    //         let colorindex = colors.indexOf(player.color);
     //         let lightColorText = colorindex < 4 ? "color: white" : "";
-    //         let style = isKept ? `background: ${user.color}; ${lightColorText}` : '';
-    //         // let style = isKept ? `border: 1px solid ${user.color}` : '';
+    //         let style = isKept ? `background: ${player.color}; ${lightColorText}` : '';
+    //         // let style = isKept ? `border: 1px solid ${player.color}` : '';
     //         rollRow += `<span class='roll-value ${isKept}' style='${style}'>${roll}</span>`;
     //       })
-    //       $(`.player-entry#p-${username.replace(/\W/g, '')}`).append(`<div class='roll-row unselectable'><span>Roll ${i + 1}: </span>${rollRow}</div>`);
+    //       $(`.player-entry#p-${playername.replace(/\W/g, '')}`).append(`<div class='roll-row unselectable'><span>Roll ${i + 1}: </span>${rollRow}</div>`);
 
     //     }
     //   }

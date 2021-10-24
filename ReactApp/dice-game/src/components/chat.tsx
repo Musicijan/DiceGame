@@ -30,12 +30,12 @@ const Chat = () => {
 
   const Message: React.FC<MessageProps> = (props: MessageProps) => {
     const messageObj = props.message;
-    const { color, date, user, message } = messageObj;
+    const { color, date, player, message } = messageObj;
 
     return (
       <div className={`message flex ${color}`} style={{border: `2px solid ${color}`}}>
         <div className="date">{date}</div>
-        <div className="user">{user}:</div>
+        <div className="player">{player}:</div>
         <div className="messageContent">{message}</div>
       </div>
     )

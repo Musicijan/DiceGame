@@ -1,54 +1,136 @@
+import { broadcast, broadcastScoreUpdate } from ".";
+import { getGameData, writeScores } from "./database";
+import { CustomWS, GameDataModel, DiceGameServiceErrorCodes, KeptDice, Roll, Rolls } from "./models";
+
 interface DiceGameService {
+  activePlayer: string | null;
   dice: number;
-  rolls: [];
-  keptDice: any;
+  rolls: Rolls;
+  keptDice: KeptDice;
 }
 
 class DiceGameService {
   constructor() {
     this.dice = 5;
     this.rolls = []
-    this.keptDice = {};
+    this.keptDice = [];
+
+    this.init();
   }
 
-  public roll() {
+  async init() {
+    const gameData = await getGameData();
+    this.activePlayer = gameData.activePlayer;
+  }
+
+  public setActivePlayer(activePlayer: string) {
+    this.activePlayer = activePlayer;
+  }
+
+  public roll(player: string) {
     console.log('roll!');
-    if (!this.verifyRoll()) return false;
+    try {
+      this.verifyRoll(player);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
 
-    // should probably just send to WS and have main game engine in BE
-    // if (this.dice != 5) {
-    //   sendLastRoll();
-    // }
+    const roll = this.rollDice()
+    this.rolls.push(roll);
+    console.log(this.rolls);
 
-    // if (dice === 5) {
-    //   $('#userName').attr('readonly', true);
-    // }
-
-    // let roll = []
-    // for (let i = 0; i < dice; i++) {
-    //   roll.push(Math.floor(Math.random() * 6) + 1)
-    // }
-    // rolls.push(roll);
-    // console.log(rolls);
-
-    // displayRoll();
+    // return roll;
+    this.updateGameState();
   }
 
-  verifyRoll() {
-    // if ($('#userName').val() === '') {
-    //   alert("Please input a name");
-    //   return false;
-    // }
-    // if (dice === 5 && rolls.length === 0) return true
-    // if (dice === 0) {
-    //   alert("All dice have been rolled.");
-    //   return false
-    // };
-    // if (dice === rolls[rolls.length - 1].length) {
-    //   alert("Pick at least one die.");
-    //   return false;
-    // }
+  rollDice(): Roll {
+    let roll = []
+    for (let i = 0; i < this.dice; i++) {
+      roll.push(Math.floor(Math.random() * 6) + 1)
+    }
+
+    return roll;
+  }
+
+  verifyRoll(requestingPlayer: string) {
+    if (requestingPlayer !== this.activePlayer) {
+      console.log(requestingPlayer);
+      console.log(this.activePlayer);
+      throw {
+        message: "It is not this player's turn.",
+        errorCode: DiceGameServiceErrorCodes.NOT_ACTIVE_PLAYER
+      }
+    }
+    if (this.dice === 5 && this.rolls.length === 0) return true
+    if (this.dice === 0) {
+      throw {
+        message: "All dice have been rolled.",
+        errorCode: DiceGameServiceErrorCodes.ALL_DICE_HAVE_BEEN_ROLLED
+      }
+    };
+    if (this.dice === this.rolls[this.rolls.length - 1].length) {
+      throw {
+        message: "Pick at least one die.",
+        errorCode: DiceGameServiceErrorCodes.DIE_NOT_PICKED
+      }
+    }
     return true;
+  }
+
+
+  async updateGameState() {
+    let gameData = await getGameData();
+    gameData = this.checkGameLeaders(gameData);
+
+    // append latest roll to gameData
+    gameData.players[this.activePlayer as string].rolls.push(this.rolls[this.rolls.length-1]);
+
+    writeScores(gameData);
+    broadcastScoreUpdate(gameData);
+  }
+
+  checkGameLeaders(gameData: GameDataModel) {
+    let scores = gameData.players;
+    // update lowest score
+    let newLowest: GameDataModel['lowestScore'] = null;
+    let newWinningPlayer: GameDataModel['winningPlayer'] = [];
+
+    for (let player in scores) {
+      let current = {
+        score: scores[player].totalScore,
+        player: player
+      }
+      console.log(current);
+      if (newLowest === null) {
+        console.log("newLowest does not exist");
+        newLowest = current.score;
+      }
+      if (newLowest) { // shut up, TS
+        if (gameData.lowestScore === null || current.score <= newLowest) {
+          console.log('overwriting newLowest');
+          if (current.score < newLowest) {
+            newLowest = current.score;
+            newWinningPlayer = [current.player];
+          } else {
+            // tied
+            newLowest = current.score;
+            newWinningPlayer.push(current.player);
+          }
+        }
+      }
+    }
+
+    console.log(`Setting lowest Score to ${newLowest}`);
+    console.log(`Setting winning player to ${newWinningPlayer}`);
+    gameData.lowestScore = newLowest;
+
+    if (this.activePlayer) { // purely to shut TS up. 
+      gameData.winningPlayer = newWinningPlayer.length === 0 ? [this.activePlayer] : newWinningPlayer;
+    } else {
+      throw "No Active Player"
+    }
+    return gameData;
   }
 
   // function displayRoll() {
@@ -64,14 +146,6 @@ class DiceGameService {
   //   if (rolls.length === 5) { // autopick last roll
   //     keepDie(rollId, lastRoll[0]);
   //   }
-  // }
-
-  // function diceRow(roll: any) {
-  //   return `<div class='dice-row' id='roll-${rolls.length}'><span class='roll-number'>Roll ${rolls.length}: </span></div>`
-  // }
-
-  // function rollValue(value: any, rollId: any) {
-  //   return `<span class='row-value unselectable' id='${rollId}' onClick='keepDie("${rollId}", ${value})'>${value}</span>`
   // }
 
   // function keepDie(rollId: any, value: any) {
@@ -124,10 +198,10 @@ class DiceGameService {
 
   // sendLastRoll() {
   //   try {
-  //     const userName = store.getState().app.userName;
+  //     const playerName = store.getState().app.playerName;
   //     webSocketService.sendMessage({
   //       command: "submit_score",
-  //       user: userName,
+  //       player: playerName,
   //       roll: this.rolls[this.rolls.length - 1],
   //       keptDice: this.keptDice
   //     });
@@ -152,20 +226,20 @@ class DiceGameService {
     //   }
     //   $('#all-scores').append(`<div id='player-order'>${allScores.playerOrder}</div>`);
 
-    //   for (let username in allScores.users) {
-    //     let user = allScores.users[username];
-    //     $('#all-scores').append(`<div class='player-entry' id='p-${username.replace(/\W/g, '')}'><div class='player-name'>${username}: ${user.totalScore}</div></div>`);
-    //     for (let i = 0; i < user.rolls.length; i++) {
+    //   for (let playername in allScores.players) {
+    //     let player = allScores.players[playername];
+    //     $('#all-scores').append(`<div class='player-entry' id='p-${playername.replace(/\W/g, '')}'><div class='player-name'>${playername}: ${player.totalScore}</div></div>`);
+    //     for (let i = 0; i < player.rolls.length; i++) {
     //       let rollRow = '';
-    //       user.rolls[i].map((roll, index) => {
-    //         let isKept = user.keptDice[`${i + 1}-${index}`] != undefined ? 'active' : '';
-    //         let colorindex = colors.indexOf(user.color);
+    //       player.rolls[i].map((roll, index) => {
+    //         let isKept = player.keptDice[`${i + 1}-${index}`] != undefined ? 'active' : '';
+    //         let colorindex = colors.indexOf(player.color);
     //         let lightColorText = colorindex < 4 ? "color: white" : "";
-    //         let style = isKept ? `background: ${user.color}; ${lightColorText}` : '';
-    //         // let style = isKept ? `border: 1px solid ${user.color}` : '';
+    //         let style = isKept ? `background: ${player.color}; ${lightColorText}` : '';
+    //         // let style = isKept ? `border: 1px solid ${player.color}` : '';
     //         rollRow += `<span class='roll-value ${isKept}' style='${style}'>${roll}</span>`;
     //       })
-    //       $(`.player-entry#p-${username.replace(/\W/g, '')}`).append(`<div class='roll-row unselectable'><span>Roll ${i + 1}: </span>${rollRow}</div>`);
+    //       $(`.player-entry#p-${playername.replace(/\W/g, '')}`).append(`<div class='roll-row unselectable'><span>Roll ${i + 1}: </span>${rollRow}</div>`);
 
     //     }
     //   }

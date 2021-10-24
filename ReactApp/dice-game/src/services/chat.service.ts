@@ -1,5 +1,5 @@
 import { store } from '../app/store';
-import { selectUserName } from '../app/app';
+import { selectPlayerName } from '../app/app';
 import { Color, colorOptions } from '../types/chatTypes';
 import { webSocketService } from './services';
 import moment from 'moment';
@@ -20,9 +20,9 @@ class ChatService {
   }
 
   public async submitMessage(message: string): Promise<void> {
-    const userIsSet = store.getState().app.userIsSet;
+    const playerIsSet = store.getState().app.playerIsSet;
     // check name
-    if (userIsSet) {
+    if (playerIsSet) {
       webSocketService.sendMessage({
         command: "chat_message",
         message,

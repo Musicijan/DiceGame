@@ -1,6 +1,6 @@
 export interface WebSocketMessagePayload {
   command: string;
-  user?: string;
+  player?: string;
   color?: string;
   message?: string;
   date?: string;

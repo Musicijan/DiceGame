@@ -15,7 +15,7 @@ export interface ChatState {
 
 export interface MessageObject {
   date: string;
-  user: string;
+  player: string;
   color: string;
   message: string;
 }

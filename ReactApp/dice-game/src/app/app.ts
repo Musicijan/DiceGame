@@ -2,8 +2,8 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState, AppThunk } from './store';
 
 const initialState: any = {
-  userName: '',
-  userIsSet: false,
+  playerName: '',
+  playerIsSet: false,
   status: 'idle',
 };
 
@@ -12,17 +12,17 @@ export const appSlice = createSlice({
   initialState,
   reducers: {
     setName: (state, action: PayloadAction<string>) => {
-      state.userName = action.payload;
+      state.playerName = action.payload;
     },
-    setUserIsSetState: (state, action: PayloadAction<boolean>) => {
-      state.userIsSet = action.payload
+    setPlayerIsSetState: (state, action: PayloadAction<boolean>) => {
+      state.playerIsSet = action.payload
     }
   },
 });
 
-export const selectUserName = (state: RootState) => state.app.userName;
-export const getUserIsSet = (state: RootState) => state.app.userIsSet;
+export const selectPlayerName = (state: RootState) => state.app.playerName;
+export const getPlayerIsSet = (state: RootState) => state.app.playerIsSet;
 
-export const { setName, setUserIsSetState } = appSlice.actions;
+export const { setName, setPlayerIsSetState } = appSlice.actions;
 
 export default appSlice.reducer;

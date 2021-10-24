@@ -2,13 +2,12 @@ import express from 'express';
 import http from 'http';
 import url from 'url';
 import WebSocket from 'ws';
-import fs from 'fs';
-import _ from 'lodash';
 import dotenv from 'dotenv';
 import { AddressInfo } from 'net';
-import { CustomWS, DataModel, IPList, User, WSMessageCommand } from './models';
+import { CustomWS, GameDataModel, IPList, Player, WSMessageCommand } from './models';
 import DiceGameService from './diceGame.service';
-import { handleAddPlayer, handleChatMessage, handleGetScores, handleResetGame, handleSubmitScore } from './handlers';
+import { handleAddPlayer, handleChatMessage, handleGetScores, handleResetGame, handleRollDice, handleSubmitScore } from './handlers';
+import { getGameData } from './database';
 
 dotenv.config({
     path: '.env'
@@ -29,13 +28,10 @@ app.use((req, res) => {
 
 export const diceGameService = new DiceGameService();
 
-app.get('/getScores', (req, res, next) => {
+app.get('/getScores', async (req, res, next) => {
     try {
-
-        fs.readFile('scores.json', (err, data) => {
-            if (err) throw err;
-            res.send(data);
-        });
+        const allData: GameDataModel = await getGameData();
+        res.send(allData);
     }
     catch (error) {
         logError(error);
@@ -66,13 +62,15 @@ wss.on('connection', (ws: CustomWS, req) => {
         let msgObj = JSON.parse(message.data as string);
         console.log(msgObj);
         console.log(msgObj.command);
+        console.log(`ws.player is: ${ws.player}`)
         switch (msgObj.command) {
             case WSMessageCommand.addPlayer:
                 handleAddPlayer(msgObj, ws);
                 break;
-            case WSMessageCommand.submitScore:
-                handleSubmitScore(msgObj, ws);
-                break;
+            // deprecated:
+            // case WSMessageCommand.submitScore:
+            //     handleSubmitScore(msgObj, ws);
+            //     break;
             case WSMessageCommand.resetGame:
                 handleResetGame();
                 break;
@@ -82,24 +80,22 @@ wss.on('connection', (ws: CustomWS, req) => {
             case WSMessageCommand.chatMessage:
                 handleChatMessage(msgObj, ws);
                 break;
+            case WSMessageCommand.rollDice:
+                handleRollDice(msgObj, ws);
+                break;
         }
     };
 
-    ws.onclose = (close) => {
-        console.log("onclose");
+    ws.onclose = () => {
+        console.log(`Closed connection with ${ws.ip}`);
+    }
+
+    ws.onerror = (error: any) => {
+        logError(error, ws);
     }
 });
 
-export function writeScores(jsonObj: DataModel) {
-    try {
-        fs.writeFileSync('scores.json', JSON.stringify(jsonObj));
-    }
-    catch (error) {
-        logError(error);
-    }
-}
-
-export function getScore(keptDice: User['keptDice']) {
+export function getScore(keptDice: Player['keptDice']) {
     let score = 0;
     try {
         for (let die in keptDice) {
@@ -115,8 +111,19 @@ export function getScore(keptDice: User['keptDice']) {
     return score;
 }
 
-export function logError(error: any) {
+export function logError(error: any, ws?: CustomWS) {
     console.log(error);
+
+    if (ws) {
+        sendMessage({
+            command: WSMessageCommand.error,
+            message: error.message
+        }, ws);
+    }
+}
+
+export function sendMessage(payload: any, ws: CustomWS) {
+    ws.send(JSON.stringify(payload));
 }
 
 export function broadcast(messageObject: any) {
@@ -130,6 +137,13 @@ export function broadcast(messageObject: any) {
     });
 }
 
-function getIP(client: any) {
+export function broadcastScoreUpdate(gameData: GameDataModel) {
+    broadcast({
+        command: WSMessageCommand.scoreUpdate,
+        data: gameData,
+    });
+}
+
+export function getIP(client: any) {
     return client?._socket?.remoteAddress;
 }

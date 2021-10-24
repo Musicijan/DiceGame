@@ -3,6 +3,7 @@ import counterReducer from '../features/counter/counterSlice';
 import appReducer from './app'
 import colorPickerReducer from './colorPicker'
 import chatReducer from './chat'
+import diceGameReducer from './diceGame'
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     app: appReducer,
     colorPicker: colorPickerReducer,
     chat: chatReducer,
+    diceGame: diceGameReducer
   },
 });
 

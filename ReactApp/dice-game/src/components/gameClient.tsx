@@ -9,19 +9,22 @@ import RolledDiceDisplay from './rolledDiceDisplay';
 import ResetGameButton from './resetGameButton';
 import ColorPicker from './colorPicker';
 import { useAppSelector } from '../app/hooks';
-import { getUserIsSet } from '../app/app';
+import { getPlayerIsSet } from '../app/app';
+import { getUserIsActivePlayer } from '../app/diceGame';
 
 const GameClient = () => {
-  const userIsSet = useAppSelector(getUserIsSet);
+  const playerIsSet = useAppSelector(getPlayerIsSet);
+  const userIsActivePlayer = useAppSelector(getUserIsActivePlayer);
+
+  console.log(userIsActivePlayer);
   return (
     <div className="client-game column">
-      {!userIsSet ? <PlayerInput /> : <PlayerHeader />} 
-      {/* {!userIsSet && <ColorPicker />} */}
-      {userIsSet && <RollButton /> }
+      {!playerIsSet ? <PlayerInput /> : <PlayerHeader />} 
+      {(playerIsSet && userIsActivePlayer) && <RollButton /> }
       <KeptDiceDisplay />
       <CurrentScore />
       <RolledDiceDisplay />
-      {userIsSet && <Chat /> }
+      {playerIsSet && <Chat /> }
       <ResetGameButton />
     </div>
   )
