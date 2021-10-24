@@ -1,35 +1,14 @@
-import { store } from '../app/store';
-import { webSocketService } from './services';
-
 interface DiceGameService {
   dice: number;
   rolls: [];
   keptDice: any;
 }
 
-// let dice = 5;
-// let rolls = []
-// let keptDice = {};
-
 class DiceGameService {
   constructor() {
     this.dice = 5;
     this.rolls = []
     this.keptDice = {};
-  }
-
-  public reset(sendToWS: boolean = true): void {
-    this.dice = 5;
-    this.rolls = [];
-    this.keptDice = {};
-    // $('.kept-dice').html('Kept: ');
-    // $('.rolled-dice').empty();
-    // $('#current-score').html('0');
-    // $('#all-scores').empty();
-
-    if (sendToWS) {
-      webSocketService.sendMessage({ command: "reset_game" });
-    }
   }
 
   public roll() {
@@ -195,9 +174,3 @@ class DiceGameService {
 }
 
 export default DiceGameService;
-
-
-
-
-
-

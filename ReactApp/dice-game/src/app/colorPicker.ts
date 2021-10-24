@@ -15,7 +15,7 @@ export const colorPickerSlice = createSlice({
   },
 });
 
-export const selectColor = (state: RootState) => state.colorPicker.selectedColor;
+export const getColor = (state: RootState) => state.colorPicker.selectedColor;
 
 export const { setColor } = colorPickerSlice.actions;
 

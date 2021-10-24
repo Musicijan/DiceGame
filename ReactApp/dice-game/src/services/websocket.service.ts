@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { setUserIsSetState } from '../app/app';
 import { addMessage } from '../app/chat';
 import { store } from '../app/store';
 import { WebSocketMessagePayload } from '../types/webSocketTypes';
@@ -9,6 +10,7 @@ export interface WebSocketService {
   sendLastRolls: number;
   username: string;
   ws: WebSocket;
+  messageQueue: WebSocketMessagePayload[];
 }
 
 export class WebSocketService {
@@ -17,6 +19,7 @@ export class WebSocketService {
     this.connectionAttempts = 0;
     this.sendLastRolls = 0;
     this.username = '';
+    this.messageQueue = [];
 
     this.init();
   }
@@ -52,8 +55,6 @@ export class WebSocketService {
               break;
             case "chat_message":
               this.handleChatMessage(msgObj)
-              // let newLine = `<p className="message" style="border: 2px solid ${color};">${msgObj.user || "Anonymous"}: ${messageText}</p>`;
-              // $("#message-box").prepend(newLine);
               break;
             case "error":
               // code 0 = Too many dice submitted
@@ -63,9 +64,14 @@ export class WebSocketService {
               }
               alert(msgObj.message);
               break;
+            case "added_player":
+              store.dispatch(setUserIsSetState(true));
           }
           console.log(msgObj);
         }
+        
+        // send any messages that were in queue upon successful WS connection
+        this.sendQueuedMessages();
       } catch (error) {
         console.log(error);
       }
@@ -74,14 +80,26 @@ export class WebSocketService {
 
   public sendMessage(payload: WebSocketMessagePayload): void {
     try {
-      this.ws.send(JSON.stringify({ ...payload }));
+      this.messageQueue.push(payload);
+      this.sendQueuedMessages();
     } catch (err) {
       alert(err);
     }
   }
 
+  sendQueuedMessages() {
+    if (this.ws.OPEN) {
+      this.messageQueue.forEach(() => {
+        const message = this.messageQueue.shift();
+        this.ws.send(JSON.stringify({ ...message }));
+      })
+    } else {
+      this.init();
+    }
+  }
+
   handleChatMessage(msgObj: any) {
-    const {user, color, date, message} = msgObj;
+    const { user, color, date, message } = msgObj;
     const formattedDate = moment(date).format('MM/DD/YY [at] h:mm:ss a')
     console.log(`received date: ${date}`);
     console.log(`formattedDate date: ${formattedDate}`);

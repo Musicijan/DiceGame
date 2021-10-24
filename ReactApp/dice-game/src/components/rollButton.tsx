@@ -1,7 +1,12 @@
 import * as React from 'react';
+import { diceGameService } from '../services/services';
+
 
 const RollButton = () => {
-  const roll = () => {}
+  const roll = () => {
+    diceGameService.roll();
+  }
+
 
   return (
     <div className="roll-btn">

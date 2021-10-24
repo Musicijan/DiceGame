@@ -1,0 +1,33 @@
+.chat-container {
+  border-top: 1px solid black;
+  margin-top: 15px;
+  padding-top: 5px;
+  #message-box {
+    height: 300px;
+    border-radius: 10px;
+    background: gainsboro;
+    overflow-y: auto;
+    .message {
+      background: white;
+      margin: 5px 0px;
+      padding: 0px 5px;
+      border-radius: 5px;
+      > div {
+        margin: 3px 0px;
+        padding: 3px;
+        &.date {
+          padding-top: 6px;
+          font-size: 10pt;
+          color: gray;
+        }
+      }
+    }
+  }
+  #chat-form {
+    margin: 5px;
+    #message-input {
+      width: 100%;
+    }
+  }
+}
+

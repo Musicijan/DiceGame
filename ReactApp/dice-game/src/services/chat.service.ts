@@ -1,4 +1,3 @@
-import toast from 'react-hot-toast';
 import { store } from '../app/store';
 import { selectUserName } from '../app/app';
 import { Color, colorOptions } from '../types/chatTypes';
@@ -12,6 +11,7 @@ class ChatService {
   constructor() {
   }
 
+  // vestigial function, deprecating now that UI disallows color change
   public setColor(color: string) {
     webSocketService.sendMessage({
         command: "set_color",
@@ -19,17 +19,17 @@ class ChatService {
     });
   }
 
-  public submitMessage(message: string): void {
-    const userName = store.getState().app.userName;
+  public async submitMessage(message: string): Promise<void> {
+    const userIsSet = store.getState().app.userIsSet;
     // check name
-    if (userName !== '') {
+    if (userIsSet) {
       webSocketService.sendMessage({
         command: "chat_message",
         message,
         date: moment().format()
       });
     } else {
-      toast.error("Please input a name.");
+      throw Error;
     }
   }
 

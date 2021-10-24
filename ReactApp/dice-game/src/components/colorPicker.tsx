@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { setColor } from "../app/colorPicker";
-import { useAppDispatch } from "../app/hooks";
+import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { chatService } from "../services/services";
 import { colorOptions } from "../types/chatTypes";
+import { getColor } from '../app/colorPicker';
 
 interface ColorSwatchProps {
   color: string;
@@ -10,10 +11,10 @@ interface ColorSwatchProps {
 
 const ColorPicker = () => {
   const dispatch = useAppDispatch();
+  const selectedColor = useAppSelector(getColor);
 
-  const selectColor = (color: string) => {
+  const setSelectedColor = (color: string) => {
     dispatch(setColor(color));
-    chatService.setColor(color);
   }
 
   const ColorOptions: React.FC = (): JSX.Element => {
@@ -29,13 +30,16 @@ const ColorPicker = () => {
   const ColorSwatch: React.FC<ColorSwatchProps> = (props: ColorSwatchProps): JSX.Element => {
     const { color } = props;
     const [isHovered, setHoverState] = useState(false);
+    
+    const isHoveredClassName = isHovered ? 'hover' : '';
+    const isSelectedClassName = color === selectedColor ? 'selected' : '';
 
     return (
       <div
-        className={`color-swatch ${color} ${isHovered && 'hover'}`}
+        className={`color-swatch ${color} ${isHoveredClassName} ${isSelectedClassName}`}
         id={`swatch-${color}`}
         style={{ background: color }}
-        onClick={() => { selectColor(color) }}
+        onClick={() => { setSelectedColor(color) }}
         onMouseEnter={() => setHoverState(true)}
         onMouseLeave={() => setHoverState(false)}
       ></div >

@@ -4,7 +4,7 @@ import GameClient from './components/gameClient';
 import { selectUserName } from './app/app';
 import { useAppSelector } from './app/hooks';
 import {Toaster} from 'react-hot-toast';
-import { selectColor } from './app/colorPicker';
+import { getColor } from './app/colorPicker';
 
 // $(document).ready(() => {
 //   initalizeChat(ws);
@@ -16,7 +16,7 @@ import { selectColor } from './app/colorPicker';
 
 function App() {
   const userName = useAppSelector(selectUserName);
-  const selectedColor = useAppSelector(selectColor)
+  const selectedColor = useAppSelector(getColor)
 
   return (
     <div className="App">

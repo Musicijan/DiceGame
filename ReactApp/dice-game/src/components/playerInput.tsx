@@ -3,12 +3,17 @@ import { useState } from 'react';
 import { webSocketService } from '../services/services';
 
 import { useAppSelector, useAppDispatch } from '../app/hooks';
-import { setName } from '../app/app';
+import { getUserIsSet, setName } from '../app/app';
 import toast from 'react-hot-toast';
+import { store } from '../app/store';
+import ColorPicker from './colorPicker';
+import { getColor } from '../app/colorPicker';
 
 
 const PlayerInput = () => {
   const dispatch = useAppDispatch();
+  const userIsSet = useAppSelector(getUserIsSet);
+  const selectedColor = useAppSelector(getColor);
   const [userName, setUserName] = useState("");
 
   const handleUserNameinput = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -17,43 +22,29 @@ const PlayerInput = () => {
 
   const submitName = (event: React.SyntheticEvent) => {
     event.preventDefault();
+    const selectedColor = store.getState().colorPicker.selectedColor;
     if (userName != '') {
+      console.log(`submitName with color: ${selectedColor}`);
       webSocketService.sendMessage(
         {
           command: "add_player",
           user: userName,
-          color: "selectedColor"
+          color: selectedColor
         }
       )
       dispatch(setName(userName));
     } else {
       toast.error('Input a value');
     }
-
-    //   try {
-    //     let name = document.getElementById('userName').value;
-    //     if (name != '') {
-    //       ws.send(JSON.stringify({
-    //         command: "add_player",
-    //         user: document.getElementById('userName').value,
-    //         color: selectedColor
-    //       }));
-
-    //       $('#userName').attr('readonly', true);
-    //       username = document.getElementById('userName').value;
-    //     } else {
-    //       alert("Input a value.");
-    //     }
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
   }
+
+  const isValidSubmit = (userName !== '' && selectedColor !== '');
 
   return (
     <form id="player-input">
-      <input type="text" id="userName" onChange={handleUserNameinput} placeholder="Player Name" />
-      <div id="color-picker"></div>
-      <button type="submit" onClick={submitName}>Submit Name</button>
+      <input type="text" value={userName} id="userName" onChange={handleUserNameinput} placeholder="Player Name" />
+      <ColorPicker />
+      {isValidSubmit && <button type="submit" onClick={submitName}>Submit Name</button>}
     </form>
   )
 }
