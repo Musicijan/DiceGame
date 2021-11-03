@@ -1,6 +1,7 @@
 import { WSMessageCommand } from '../../../../Node Webserver/src/models';
 import { setScores } from '../app/diceGame';
 import { store } from '../app/store';
+import { KeptDice } from '../types/gameModel';
 import { webSocketService } from './services';
 
 interface DiceGameService {
@@ -37,24 +38,14 @@ class DiceGameService {
   public roll() {
     console.log('roll!');
     webSocketService.sendMessage({ command: "roll_dice" });
+  }
 
-    // should probably just send to WS and have main game engine in BE
-    // if (this.dice != 5) {
-    //   sendLastRoll();
-    // }
-
-    // if (dice === 5) {
-    //   $('#playerName').attr('readonly', true);
-    // }
-
-    // let roll = []
-    // for (let i = 0; i < dice; i++) {
-    //   roll.push(Math.floor(Math.random() * 6) + 1)
-    // }
-    // rolls.push(roll);
-    // console.log(rolls);
-
-    // displayRoll();
+  public setKeptDice(keptDice: KeptDice) {
+    console.log('Set Kept dice');
+    webSocketService.sendMessage({
+      command: "set_kept_dice",
+      keptDice
+    })
   }
 
   verifyRoll() {

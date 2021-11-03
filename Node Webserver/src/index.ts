@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 import { AddressInfo } from 'net';
 import { CustomWS, GameDataModel, IPList, Player, WSMessageCommand } from './models';
 import DiceGameService from './diceGame.service';
-import { handleAddPlayer, handleChatMessage, handleGetScores, handleResetGame, handleRollDice, handleSubmitScore } from './handlers';
+import { handleAddPlayer, handleChatMessage, handleGetScores, handleResetGame, handleRollDice, handleSetKeptDice, handleSubmitScore } from './handlers';
 import { getGameData } from './database';
 
 dotenv.config({
@@ -48,7 +48,6 @@ wss.on('connection', (ws: CustomWS, req) => {
     if (ip) {
         IP_List.push({
             ip: ip,
-            color: 'red'
         });
         ws.ip = ip;
     }
@@ -83,6 +82,9 @@ wss.on('connection', (ws: CustomWS, req) => {
             case WSMessageCommand.rollDice:
                 handleRollDice(msgObj, ws);
                 break;
+            case WSMessageCommand.setKeptDice:
+                handleSetKeptDice(msgObj, ws);
+                break;
         }
     };
 
@@ -98,9 +100,12 @@ wss.on('connection', (ws: CustomWS, req) => {
 export function getScore(keptDice: Player['keptDice']) {
     let score = 0;
     try {
-        for (let die in keptDice) {
-            if (keptDice[die] != 3) {
-                score += keptDice[die];
+        for (let rollIndex in keptDice) {
+            const roll = keptDice[rollIndex];
+            for (let die in roll) {
+                if (roll[die] != 3) {
+                    score += roll[die];
+                }
             }
         }
     }

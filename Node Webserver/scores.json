@@ -1,1 +1,1 @@
-{"players":{"Jan":{"totalScore":0,"color":"green","rolls":[[2,5,6,2,6]],"keptDice":[]}},"playerOrder":["Jan"],"lowestScore":0,"winningPlayer":["Jan"],"activePlayer":"Jan"}
+{"players":{"Jan":{"totalScore":0,"color":"green","rolls":[[3,4,4,5,4],[6,4,1,6]],"keptDice":[[{"value":3,"index":0}]],"rollStatus":2}},"playerOrder":["Jan"],"lowestScore":0,"winningPlayer":["Jan"],"activePlayer":"Jan"}

@@ -2,6 +2,7 @@ import moment from 'moment';
 import toast from 'react-hot-toast';
 import { setPlayerIsSetState } from '../app/app';
 import { addMessage } from '../app/chat';
+import { setKeptDice } from '../app/diceGame';
 import { store } from '../app/store';
 import { WebSocketMessagePayload } from '../types/webSocketTypes';
 import { diceGameService } from './services'
@@ -67,6 +68,11 @@ export class WebSocketService {
               break;
             case "added_player":
               store.dispatch(setPlayerIsSetState(true));
+              break;
+            case "reset_game":
+              store.dispatch(setPlayerIsSetState(false));  
+              store.dispatch(setKeptDice([]));
+              break;
           }
           console.log(msgObj);
         }

@@ -1,5 +1,6 @@
 @import "./styles/colorPicker.scss";
 @import "./styles/chat.scss";
+@import "./styles/gameClient.scss";
 
 .App {
   text-align: center;
@@ -55,6 +56,25 @@
   }
 }
 
+.column-container {
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  width: 75%;
+}
+
+$blue: #24b8ff;
+
+.button {
+  background: lighten($blue, 10%);
+  border-radius: 5px;
+  padding: 3px;
+  &:hover {
+    cursor: pointer;
+    background: lighten($blue, 20%);
+  }
+}
+
 /* .column-container {
   display: flex;
 } */
@@ -63,60 +83,6 @@
   margin-bottom: 10px;
 } */
 
-
-
-.reset-game {
-  margin-top: 100px;
-}
-
-.dice-row {
-  margin-top: 10px;
-}
-
-.kept-dice {
-  margin-top: 10px;
-}
-
-.rolled-dice {
-  height: 150px;
-}
-
-.row-value {
-  background: gainsboro;
-  padding: 3px 10px;
-  margin-right: 5px;
-  border-radius: 5px;
-}
-
-.row-value:hover {
-  cursor: pointer;
-}
-
-.row-value.active {
-  background: #24b8ff;
-}
-
-.roll-row {
-  margin-bottom: 10px;
-}
-
-.roll-value {
-  background: gainsboro;
-  padding: 3px 10px;
-  margin-right: 5px;
-  border-radius: 5px;
-}
-
-.roll-value.active {
-  background: #24b8ff;
-}
-
-.column-container {
-  margin-left: auto;
-  margin-right: auto;
-  position: relative;
-  width: 75%;
-}
 
 /* .column-container .column {
   width: 50%;

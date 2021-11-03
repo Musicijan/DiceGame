@@ -1,19 +1,23 @@
 import { broadcast, broadcastScoreUpdate } from ".";
 import { getGameData, writeScores } from "./database";
-import { CustomWS, GameDataModel, DiceGameServiceErrorCodes, KeptDice, Roll, Rolls } from "./models";
+import { CustomWS, GameDataModel, DiceGameServiceErrorCodes, KeptDice, Roll, Rolls, RollStatus } from "./models";
+
+const baseDice = 5;
 
 interface DiceGameService {
   activePlayer: string | null;
   dice: number;
   rolls: Rolls;
   keptDice: KeptDice;
+  activePlayerRollStatus: RollStatus;
 }
 
 class DiceGameService {
   constructor() {
-    this.dice = 5;
+    this.dice = baseDice;
     this.rolls = []
     this.keptDice = [];
+    this.activePlayerRollStatus = RollStatus.AWAITING_ROLL
 
     this.init();
   }
@@ -38,10 +42,15 @@ class DiceGameService {
 
     const roll = this.rollDice()
     this.rolls.push(roll);
+    this.activePlayerRollStatus = RollStatus.AWAITING_KEPT;
     console.log(this.rolls);
 
     // return roll;
-    this.updateGameState();
+    this.updateGameStateAfterRoll();
+  }
+
+  public keepDice() {
+
   }
 
   rollDice(): Roll {
@@ -53,8 +62,16 @@ class DiceGameService {
     return roll;
   }
 
+  setKeptDice(keptDice: KeptDice) {
+    this.keptDice.push(...keptDice);
+    this.dice = baseDice - keptDice.length;
+    console.log(`keeping ${keptDice.length} die`)
+    console.log(`new this.dice: ${this.dice}`)
+    this.updateGameStateAfterKeptDice();
+  }
+
   verifyRoll(requestingPlayer: string) {
-    if (requestingPlayer !== this.activePlayer) {
+    if (this.activePlayer && requestingPlayer !== this.activePlayer) {
       console.log(requestingPlayer);
       console.log(this.activePlayer);
       throw {
@@ -62,29 +79,43 @@ class DiceGameService {
         errorCode: DiceGameServiceErrorCodes.NOT_ACTIVE_PLAYER
       }
     }
-    if (this.dice === 5 && this.rolls.length === 0) return true
     if (this.dice === 0) {
       throw {
         message: "All dice have been rolled.",
         errorCode: DiceGameServiceErrorCodes.ALL_DICE_HAVE_BEEN_ROLLED
       }
     };
-    if (this.dice === this.rolls[this.rolls.length - 1].length) {
+    console.log(`verifyRoll with activePlayerRollStatus: ${this.activePlayerRollStatus}`)
+    if (this.activePlayerRollStatus === 2 && this.rolls.length >= 1 && this.dice === this.rolls[this.rolls.length - 1].length) {
       throw {
         message: "Pick at least one die.",
         errorCode: DiceGameServiceErrorCodes.DIE_NOT_PICKED
       }
     }
+    if (this.dice === baseDice && this.rolls.length === 0) return true
     return true;
   }
 
 
-  async updateGameState() {
+  async updateGameStateAfterRoll() {
     let gameData = await getGameData();
     gameData = this.checkGameLeaders(gameData);
 
     // append latest roll to gameData
     gameData.players[this.activePlayer as string].rolls.push(this.rolls[this.rolls.length-1]);
+    gameData.players[this.activePlayer as string].rollStatus = RollStatus.AWAITING_KEPT;
+
+    writeScores(gameData);
+    broadcastScoreUpdate(gameData);
+  }
+
+  async updateGameStateAfterKeptDice() {
+    let gameData = await getGameData();
+    gameData = this.checkGameLeaders(gameData);
+
+    // append latest roll to gameData
+    gameData.players[this.activePlayer as string].keptDice = this.keptDice;
+    gameData.players[this.activePlayer as string].rollStatus = RollStatus.AWAITING_ROLL;
 
     writeScores(gameData);
     broadcastScoreUpdate(gameData);
@@ -131,6 +162,13 @@ class DiceGameService {
       throw "No Active Player"
     }
     return gameData;
+  }
+
+  resetGame() {
+    this.dice = baseDice;
+    this.rolls = []
+    this.keptDice = [];
+    this.activePlayer = null;
   }
 
   // function displayRoll() {

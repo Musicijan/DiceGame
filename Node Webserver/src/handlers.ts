@@ -1,4 +1,4 @@
-import { CustomWS, GameDataModel, ErrorCodes, WSMessageCommand } from './models';
+import { CustomWS, GameDataModel, ErrorCodes, WSMessageCommand, RollStatus } from './models';
 import { diceGameService, logError, getScore, broadcast, sendMessage, getIP, broadcastScoreUpdate } from './index';
 import { getGameData, writeScores } from './database';
 
@@ -10,21 +10,24 @@ export const handleAddPlayer = async (msgObj: any, ws: CustomWS) => {
 
     if (!gameData.players[msgObj.player]) {
       // New player
-      console.log('setting ws.player');
+      console.log(`setting ws.player: ${msgObj.player}`);
       ws.player = msgObj.player;
       ws.color = msgObj.color;
       gameData.players[msgObj.player] = {
         totalScore: 0,
         color: ws.color || 'blue',
         rolls: [],
-        keptDice: []
+        keptDice: [],
+        rollStatus: RollStatus.NOT_ACTIVE
       }
 
       gameData.playerOrder.push(msgObj.player);
 
       if (!diceGameService.activePlayer) {
+        // sets class property to active
         diceGameService.setActivePlayer(msgObj.player);
         gameData.activePlayer = msgObj.player;
+        gameData.players[msgObj.player].rollStatus = RollStatus.AWAITING_ROLL;
       }
 
       writeScores(gameData);
@@ -59,6 +62,7 @@ export const handleAddPlayer = async (msgObj: any, ws: CustomWS) => {
 
 export const handleResetGame = () => {
   console.log("Resetting game.");
+  diceGameService.resetGame();
   try {
     let newGame = {
       players: {},
@@ -68,6 +72,10 @@ export const handleResetGame = () => {
       activePlayer: null,
     };
     writeScores(newGame);
+    broadcastScoreUpdate(newGame);
+    broadcast({
+      command: WSMessageCommand.resetGame
+    })
   }
   catch (error) {
     logError(error);
@@ -99,7 +107,8 @@ export const handleSubmitScore = async (msgObj: any, ws: CustomWS) => {
         scores[msgObj.player] = {
           totalScore: 0,
           rolls: [],
-          keptDice: []
+          keptDice: [],
+          rollStatus: RollStatus.NOT_ACTIVE
         }
 
         ws.player = msgObj.player;
@@ -177,17 +186,20 @@ export const handleSubmitScore = async (msgObj: any, ws: CustomWS) => {
 export const handleRollDice = async (msgObj: any, ws: CustomWS) => {
   // get the roll
   try {
-    console.log(ws.player);
+    console.log(`handleRollDice - ws.player: ${ws.player}`)
     diceGameService.roll(ws.player);
   } catch (error) {
     logError(error, ws);
   }
+}
 
-  // update DB
-  // let gameData: GameDataModel = await getGameData();
-  // gameData.players[msgObj.player].rolls.push(roll);
-
-  // writeScores(gameData);
+export const handleSetKeptDice = async (msgObj: any, ws: CustomWS) => {
+  try {
+    console.log('handleSetKeptDice');
+    diceGameService.setKeptDice(msgObj.keptDice);
+  } catch (error) {
+    logError(error, ws);
+  }
 }
 
 export const handleChatMessage = (msgObj: any, ws: CustomWS) => {

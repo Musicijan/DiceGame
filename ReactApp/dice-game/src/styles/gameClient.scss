@@ -1,0 +1,60 @@
+.game-client {
+  &.column {
+  }
+  .rolled-dice {
+    max-height: 350px;
+    overflow: auto;
+    .player-dice {
+      .player-rolls {
+        width: 400px;
+        .roll-row {
+          // flex: 1;
+          margin-left: 10px;
+          margin-bottom: 10px;
+          .roll-header {
+            // border: 1px solid black;
+            border-radius: 5px;
+            width: 50px;
+            padding-top: 2px;
+            margin-right: 10px;
+          }
+          > div {
+            .roll-value {
+              background: gainsboro;
+              padding: 3px 10px;
+              margin-right: 5px;
+              border-radius: 5px;
+              &.selectable {
+                &.hovered {
+                  // &:hover {
+                  cursor: pointer;
+                  border: 2px solid #24b8ff;
+                  padding: 1px 8px;
+                }
+              }
+              &.selected {
+                background: #24b8ff;
+              }
+            }
+            // .kept-dice-button {
+            //   align-self: flex-end;
+            // }
+          }
+          .kept-dice-button {
+            flex-basis: auto;
+            width: 65px;
+            align-self: flex-end;
+          }
+        }
+      }
+    }
+  }
+
+  .kept-dice {
+    margin-top: 10px;
+  }
+
+  .reset-game {
+    margin-top: 100px;
+  }
+}

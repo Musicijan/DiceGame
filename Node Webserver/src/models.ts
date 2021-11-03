@@ -3,7 +3,6 @@ import { WebSocket } from "ws";
 // WebSocket
 export interface IPList {
   ip: string;
-  color: string;
 }
 
 export interface CustomWS extends WebSocket {
@@ -29,6 +28,13 @@ export interface Player {
   rolls: Rolls;
   keptDice: KeptDice;
   color?: string;
+  rollStatus: RollStatus;
+}
+
+export enum RollStatus {
+  NOT_ACTIVE = 0,
+  AWAITING_ROLL = 1,
+  AWAITING_KEPT = 2
 }
 
 export interface WSMessagePayload {
@@ -48,6 +54,7 @@ export enum WSMessageCommand {
 
 // game engine commands
   rollDice = "roll_dice",
+  setKeptDice = "set_kept_dice",
   
   // misc
   error = "error",
@@ -76,4 +83,5 @@ export enum DiceGameServiceErrorCodes {
 // GameLogic
 export type Rolls = Roll[];
 export type Roll = number[];
-export type KeptDice = number[];
+export type KeptDice = KeptDiceFromRoll[];
+export type KeptDiceFromRoll = number[]
